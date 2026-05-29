@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ai-devops-assistant
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: ai-devops-assistant
+
+  template:
+    metadata:
+      labels:
+        app: ai-devops-assistant
+
+    spec:
+      containers:
+      - name: api
+
+        image: ai-devops-assistant:latest
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: OPENAI_API_KEY
