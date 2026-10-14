@@ -1,88 +1,28 @@
+
 # AI DevOps Assistant
 
-An end-to-end AI-powered DevOps application built with FastAPI, Docker, Kubernetes, GitHub Actions, and Prometheus monitoring.
-
-This project demonstrates modern cloud-native engineering practices, including API development, AI integration, containerization, Kubernetes deployments, CI/CD automation, and observability.
-
----
+An AI-powered DevOps application built with FastAPI, Docker, Kubernetes, and GitHub Actions. Integrates the OpenAI API with automated application delivery and Prometheus-compatible monitoring.
 
 ## Architecture
 
 ```text
-                +----------------+
-                |     User       |
-                +--------+-------+
-                         |
-                         v
-                +----------------+
-                |   FastAPI API  |
-                +--------+-------+
-                         |
-                         v
-                +----------------+
-                |   OpenAI API   |
-                +--------+-------+
-                         |
-                         v
-                +----------------+
-                |    Response    |
-                +----------------+
+User → FastAPI → OpenAI API → Response
 
-CI/CD Flow
-
-GitHub
-   |
-   v
-GitHub Actions
-   |
-   v
-Docker Build
-
-Deployment Flow
-
-Docker Image
-   |
-   v
-Kubernetes (kind)
-
-Monitoring
-
-Application
-   |
-   v
-Prometheus Metrics (/metrics)
+GitHub → GitHub Actions → Docker Image
+                              ↓
+                         Kubernetes
+                              ↓
+                     Prometheus Metrics
 ```
 
----
+## Tech Stack & Features
 
-## Features
-
-* FastAPI REST API
-* AI-powered DevOps assistant endpoint
-* Dockerized application
-* Kubernetes deployment using kind
-* GitHub Actions CI pipeline
-* Prometheus-compatible monitoring endpoint
-* Health check endpoint
-* Environment variable-based secret management
-
----
-
-## Tech Stack
-
-| Category         | Technology     |
-| ---------------- | -------------- |
-| Language         | Python         |
-| API Framework    | FastAPI        |
-| AI               | OpenAI API     |
-| Containerization | Docker         |
-| Orchestration    | Kubernetes     |
-| Local Cluster    | kind           |
-| CI/CD            | GitHub Actions |
-| Monitoring       | Prometheus     |
-| Version Control  | Git            |
-
----
+- **Language & API:** Python, FastAPI, REST endpoints
+- **AI Integration:** OpenAI API for AI-powered DevOps assistance
+- **Containers & Orchestration:** Docker, Kubernetes, kind
+- **CI/CD:** GitHub Actions for dependency installation and build validation
+- **Observability:** Prometheus-compatible metrics, health checks, Python process metrics
+- **Security:** Environment-based secrets, `.env` exclusion, GitHub Secret Scanning
 
 ## Project Structure
 
@@ -101,29 +41,15 @@ Prometheus Metrics (/metrics)
 └── README.md
 ```
 
----
-
 ## API Endpoints
 
-### Health Check
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | Application health check |
+| POST | `/ask` | Submit a DevOps question to the AI assistant |
+| GET | `/metrics` | Expose Prometheus-compatible metrics |
 
-**GET /**
-
-Response:
-
-```json
-{
-  "status": "running"
-}
-```
-
----
-
-### Ask AI
-
-**POST /ask**
-
-Request:
+Example request to `/ask`:
 
 ```json
 {
@@ -131,55 +57,18 @@ Request:
 }
 ```
 
-Response:
-
-```json
-{
-  "answer": "..."
-}
-```
-
----
-
-### Metrics
-
-**GET /metrics**
-
-Returns Prometheus-compatible metrics.
-
-Example:
-
-```text
-# HELP http_requests_total Total HTTP Requests
-# TYPE http_requests_total counter
-http_requests_total 5
-```
-
----
-
 ## Local Development
 
-### Clone Repository
+Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/nicoghezzi/ai-devops-assistant.git
 cd ai-devops-assistant
-```
 
-### Create Virtual Environment
-
-```bash
 python3 -m venv venv
 source venv/bin/activate
-```
-
-### Install Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
-
-### Configure Environment Variables
 
 Create a `.env` file:
 
@@ -187,163 +76,77 @@ Create a `.env` file:
 OPENAI_API_KEY=your_api_key_here
 ```
 
-### Run Application
+Run the application:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Open Swagger UI:
+Swagger UI: `http://localhost:8000/docs`
 
-```text
-http://localhost:8000/docs
-```
+## Docker Deployment
 
----
-
-## Docker
-
-### Build Image
+Build and run the container:
 
 ```bash
 docker build -t ai-devops-assistant .
-```
-
-### Run Container
-
-```bash
 docker run -p 8000:8000 --env-file .env ai-devops-assistant
 ```
 
----
+## Kubernetes Deployment (kind)
 
-## Kubernetes Deployment
-
-### Create Cluster
+Create a local cluster and load the Docker image:
 
 ```bash
 kind create cluster --name ai-cluster
-```
-
-### Load Docker Image
-
-```bash
 kind load docker-image ai-devops-assistant --name ai-cluster
 ```
 
-### Deploy Application
+Deploy and verify:
 
 ```bash
 kubectl apply -f k8s/
-```
-
-### Verify Pods
-
-```bash
 kubectl get pods
-```
-
-### Port Forward
-
-```bash
 kubectl port-forward svc/ai-devops-service 8080:80
 ```
 
-Application:
+Access the application:
 
-```text
-http://localhost:8080
-```
+- **API:** `http://localhost:8080`
+- **Swagger UI:** `http://localhost:8080/docs`
+- **Metrics:** `http://localhost:8080/metrics`
 
-Swagger:
+## CI/CD & Monitoring
 
-```text
-http://localhost:8080/docs
-```
+GitHub Actions automates dependency installation and application build validation on repository pushes. The application exposes request metrics through `/metrics`, including custom HTTP request counters and default Python process metrics.
 
-Metrics:
+## Engineering Decisions & Trade-offs
 
-```text
-http://localhost:8080/metrics
-```
-
----
-
-## Monitoring
-
-The application exposes Prometheus-compatible metrics through:
-
-```text
-/metrics
-```
-
-Current custom metrics:
-
-```text
-http_requests_total
-```
-
-Default Python process metrics include:
-
-* CPU usage
-* Memory usage
-* Garbage collection statistics
-* Process uptime
-
----
-
-## CI/CD Pipeline
-
-GitHub Actions automatically:
-
-* Checks out source code
-* Installs dependencies
-* Builds Docker image
-* Validates application build
-
-Pipeline runs automatically on push to the repository.
-
----
+| Decision | Rationale | Trade-off |
+|---|---|---|
+| **FastAPI for the API layer** | Lightweight framework with automatic API documentation. | Requires explicit handling of input validation, timeouts, and external API errors. |
+| **OpenAI API over self-hosted models** | Avoids operating model-serving infrastructure. | Introduces usage costs, external dependency latency, and data privacy considerations. |
+| **Docker and Kubernetes** | Provides portable packaging and declarative deployment. | Adds image management and orchestration complexity compared with a standalone container. |
+| **kind for local Kubernetes** | Enables local deployment and testing without an AWS cluster. | Does not validate production EKS networking, IAM, or managed infrastructure behavior. |
+| **GitHub Actions for CI** | Keeps build validation alongside source code. | The current pipeline validates the build but does not establish automated Kubernetes deployment. |
+| **Prometheus-compatible metrics** | Enables application-level visibility and future monitoring integration. | A metrics endpoint alone does not provide a complete monitoring and alerting system. |
 
 ## Security
 
-* API keys stored in environment variables
-* `.env` excluded from source control
-* GitHub Secret Scanning enabled
-* No hardcoded credentials
-* Secrets managed outside application code
-
----
+- Load API keys through environment variables.
+- Exclude `.env` from source control.
+- Use GitHub Secret Scanning to help detect accidental credential exposure.
+- Avoid hardcoding credentials in application code or container images.
 
 ## Future Enhancements
 
-* Grafana dashboards
-* Prometheus server deployment
-* Helm charts
-* ArgoCD GitOps deployment
-* Terraform infrastructure provisioning
-* AWS EKS deployment
-* Horizontal Pod Autoscaler (HPA)
-* Structured logging
-* Distributed tracing
+- Prometheus server and Grafana dashboards
+- Helm charts and ArgoCD GitOps deployment
+- Terraform-managed AWS EKS infrastructure
+- Horizontal Pod Autoscaler (HPA)
+- Structured logging and distributed tracing
 
 ---
 
-## Skills Demonstrated
-
-* Python Development
-* FastAPI
-* AI Integration
-* Docker
-* Kubernetes
-* CI/CD
-* GitHub Actions
-* Prometheus Monitoring
-* DevSecOps Fundamentals
-* Cloud-Native Application Development
-
----
-
-## Author
-
-**Nico Ghezzi**
+## 🚀 Author
+Nicolas Ghezzi LinkedIn: https://www.linkedin.com/in/nghezzi/
